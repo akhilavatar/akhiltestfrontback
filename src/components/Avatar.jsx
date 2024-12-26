@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useChat } from "../hooks/useChat";
 import { useFacialExpressions } from "../hooks/useFacialExpressions";
 import { filterEndTracks } from "../utils/animations";
+import { visemeMap } from "../constants/facialExpressions";
 
 export function Avatar(props) {
   const { nodes, materials, scene } = useGLTF("/models/64f1a714fe61576b46f27ca2.glb");
@@ -14,6 +15,9 @@ export function Avatar(props) {
   const { actions } = useAnimations(animations, group);
   const [animation, setAnimation] = useState("Standing Idle");
   const { message, onMessagePlayed } = useChat();
+  const [lipsync, setLipsync] = useState();
+  const [blink, setBlink] = useState(false);
+  const blinkTimeout = useRef();
   
   const { currentExpression, setupMode, setupControls } = useFacialExpressions(nodes);
 
@@ -37,6 +41,30 @@ export function Avatar(props) {
     }
   }, [message]);
 
+  // Blinking
+  useEffect(() => {
+    const handleBlink = () => {
+      setBlink(true);
+      blinkTimeout.current = setTimeout(() => {
+        setBlink(false);
+        scheduleNextBlink();
+      }, 200);
+    };
+
+    const scheduleNextBlink = () => {
+      const timeout = setTimeout(handleBlink, Math.random() * 5000 + 2000);
+      blinkTimeout.current = timeout;
+    };
+
+    scheduleNextBlink();
+
+    return () => {
+      if (blinkTimeout.current) {
+        clearTimeout(blinkTimeout.current);
+      }
+    };
+  }, []);
+
   // Animation controls
   useControls({
     Animation: {
@@ -57,6 +85,24 @@ export function Avatar(props) {
           nodes.Wolf3D_Head.morphTargetInfluences[idx] = value;
         }
       });
+    }
+
+    // Apply blinking
+    if (nodes?.Wolf3D_Head) {
+      const blinkIdx = nodes.Wolf3D_Head.morphTargetDictionary.eyeBlinkLeft;
+      const blinkRightIdx = nodes.Wolf3D_Head.morphTargetDictionary.eyeBlinkRight;
+      if (typeof blinkIdx !== 'undefined' && typeof blinkRightIdx !== 'undefined') {
+        nodes.Wolf3D_Head.morphTargetInfluences[blinkIdx] = blink ? 1 : 0;
+        nodes.Wolf3D_Head.morphTargetInfluences[blinkRightIdx] = blink ? 1 : 0;
+      }
+    }
+
+    // Apply lip sync
+    if (nodes?.Wolf3D_Head && lipsync) {
+      const visemeIdx = nodes.Wolf3D_Head.morphTargetDictionary[visemeMap[lipsync]];
+      if (typeof visemeIdx !== 'undefined') {
+        nodes.Wolf3D_Head.morphTargetInfluences[visemeIdx] = 1;
+      }
     }
   });
 
