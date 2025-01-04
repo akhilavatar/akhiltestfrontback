@@ -1,22 +1,18 @@
 import { useAnimations, useGLTF } from "@react-three/drei";
 import React, { useRef, useEffect } from "react";
-import { useChat } from "../../hooks/useChat";
 import { useLipSync } from "../../hooks/useLipSync";
 import { useAvatarModel } from "../../hooks/useAvatarModel";
-import { filterEndTracks } from "../../utils/animations";
-import { ANIMATIONS } from "../../constants/animations";
-import { AvatarMesh } from './AvatarMesh';
-import { useAvatarState } from './useAvatarState';
+import { useAvatarState } from '../../hooks/useAvatarState';
 import { useAvatarControls } from '../../hooks/useAvatarControls';
+import { useAvatarAnimations } from '../../hooks/useAvatarAnimations';
+import { AvatarMesh } from './AvatarMesh';
 
 export function Avatar(props) {
   const { currentModel } = useAvatarModel();
   const { nodes, materials } = useGLTF(currentModel);
-  const { animations: originalAnimations } = useGLTF("/models/animations.glb");
-  const animations = filterEndTracks(originalAnimations);
+  const animations = useAvatarAnimations();
   const group = useRef();
   const { actions } = useAnimations(animations, group);
-  const { message } = useChat();
   const { currentViseme } = useLipSync();
   const { 
     currentAnimation, 
@@ -26,7 +22,7 @@ export function Avatar(props) {
   } = useAvatarState();
 
   // Setup Leva controls
-  const { setupMode } = useAvatarControls({
+  useAvatarControls({
     nodes,
     onAnimationChange: (value) => {
       if (value && actions[value]) {
@@ -58,17 +54,6 @@ export function Avatar(props) {
     };
   }, [currentAnimation, actions]);
 
-  // Handle message-based animations
-  useEffect(() => {
-    if (!message) {
-      setCurrentAnimation(ANIMATIONS.IDLE);
-      return;
-    }
-
-    const talkingAnimation = ANIMATIONS.TALKING[Math.floor(Math.random() * ANIMATIONS.TALKING.length)];
-    setCurrentAnimation(talkingAnimation);
-  }, [message, setCurrentAnimation]);
-
   return (
     <group {...props} ref={group} dispose={null}>
       <AvatarMesh 
@@ -76,10 +61,7 @@ export function Avatar(props) {
         materials={materials} 
         currentExpression={currentExpression}
         currentViseme={currentViseme}
-        setupMode={setupMode}
       />
     </group>
   );
 }
-
-useGLTF.preload("/models/animations.glb");

@@ -1,23 +1,20 @@
-import { useState, useEffect } from 'react';
-import { ANIMATIONS } from '../constants/animations';
+import { useEffect, useState } from 'react';
+import { useGLTF } from '@react-three/drei';
+import { filterEndTracks } from '../utils/animations';
 
-export const useAvatarAnimations = (actions, message) => {
-  const [currentAnimation, setCurrentAnimation] = useState(ANIMATIONS.IDLE);
+export const useAvatarAnimations = () => {
+  const [animations, setAnimations] = useState(null);
+  // Use the correct path with useGLTF
+  const { animations: originalAnimations } = useGLTF('/models/animations.glb');
 
   useEffect(() => {
-    if (!message) {
-      setCurrentAnimation(ANIMATIONS.IDLE);
-      return;
-    }
-    
-    // Pick a random talking animation if none specified
-    const talkingAnimation = message.animation || 
-      ANIMATIONS.TALKING[Math.floor(Math.random() * ANIMATIONS.TALKING.length)];
-    setCurrentAnimation(talkingAnimation);
-  }, [message]);
+    if (!originalAnimations) return;
+    const filteredAnimations = filterEndTracks(originalAnimations);
+    setAnimations(filteredAnimations);
+  }, [originalAnimations]);
 
-  return {
-    currentAnimation,
-    setCurrentAnimation
-  };
+  return animations;
 };
+
+// Preload animations
+useGLTF.preload('/models/animations.glb');

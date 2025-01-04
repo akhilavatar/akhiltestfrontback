@@ -1,10 +1,14 @@
 import { useGLTF } from "@react-three/drei";
+import { useEffect } from "react";
 import { AVATAR_LIST } from '../../constants/avatars';
 
 export const AvatarModel = ({ children }) => {
-  // Preload all avatar models
-  AVATAR_LIST.forEach(avatar => useGLTF.preload(avatar.path));
-  useGLTF.preload("/models/animations.glb");
+  useEffect(() => {
+    // Preload avatars
+    AVATAR_LIST.forEach(avatar => useGLTF.preload(avatar.path));
+    // Preload animations
+    useGLTF.preload('/models/animations.glb');
+  }, []);
 
   return children;
 };

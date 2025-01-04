@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { facialExpressions } from '../../constants/facialExpressions';
 
-export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme, setupMode }) => {
+export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme }) => {
   const meshRefs = useRef({});
 
   useEffect(() => {
@@ -15,26 +15,24 @@ export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme,
       // Reset morphs
       mesh.morphTargetInfluences.fill(0);
 
-      if (!setupMode) {
-        // Apply expression
-        const expressionValues = facialExpressions[currentExpression] || {};
-        Object.entries(expressionValues).forEach(([key, value]) => {
-          const idx = mesh.morphTargetDictionary[key];
-          if (typeof idx !== 'undefined') {
-            mesh.morphTargetInfluences[idx] = value;
-          }
-        });
+      // Apply expression
+      const expressionValues = facialExpressions[currentExpression] || {};
+      Object.entries(expressionValues).forEach(([key, value]) => {
+        const idx = mesh.morphTargetDictionary[key];
+        if (typeof idx !== 'undefined') {
+          mesh.morphTargetInfluences[idx] = value;
+        }
+      });
 
-        // Apply viseme
-        if (currentViseme) {
-          const visemeIdx = mesh.morphTargetDictionary[currentViseme];
-          if (typeof visemeIdx !== 'undefined') {
-            mesh.morphTargetInfluences[visemeIdx] = 1;
-          }
+      // Apply viseme
+      if (currentViseme) {
+        const visemeIdx = mesh.morphTargetDictionary[currentViseme];
+        if (typeof visemeIdx !== 'undefined') {
+          mesh.morphTargetInfluences[visemeIdx] = 1;
         }
       }
     });
-  }, [nodes, currentExpression, currentViseme, setupMode]);
+  }, [nodes, currentExpression, currentViseme]);
 
   if (!nodes || !materials) return null;
 
@@ -76,7 +74,7 @@ export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme,
           ref={ref => meshRefs.current.Wolf3D_Head = ref}
           name="Wolf3D_Head"
           geometry={nodes.Wolf3D_Head.geometry}
-          material={materials.Wolf3D_Head}
+          material={materials.Wolf3D_Skin}
           skeleton={nodes.Wolf3D_Head.skeleton}
           morphTargetDictionary={nodes.Wolf3D_Head.morphTargetDictionary}
           morphTargetInfluences={nodes.Wolf3D_Head.morphTargetInfluences}
