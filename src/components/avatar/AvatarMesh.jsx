@@ -1,14 +1,16 @@
 import React, { useRef, useEffect } from 'react';
-import { facialExpressions } from '../../constants/facialExpressions';
+import { useMorphTargets } from '../../hooks/useMorphTargets';
+import { VISEME_MAP } from '../../constants/visemes';
 
 export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme }) => {
   const meshRefs = useRef({});
+  const mappedMorphs = useMorphTargets(nodes, currentExpression);
 
+  // Apply morph targets
   useEffect(() => {
     if (!nodes) return;
 
-    const meshes = ['Wolf3D_Head', 'Wolf3D_Teeth', 'EyeLeft', 'EyeRight'];
-    meshes.forEach(meshName => {
+    ['Wolf3D_Head', 'Wolf3D_Teeth', 'EyeLeft', 'EyeRight'].forEach(meshName => {
       const mesh = meshRefs.current[meshName];
       if (!mesh?.morphTargetDictionary || !mesh?.morphTargetInfluences) return;
 
@@ -16,8 +18,7 @@ export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme 
       mesh.morphTargetInfluences.fill(0);
 
       // Apply expression
-      const expressionValues = facialExpressions[currentExpression] || {};
-      Object.entries(expressionValues).forEach(([key, value]) => {
+      Object.entries(mappedMorphs).forEach(([key, value]) => {
         const idx = mesh.morphTargetDictionary[key];
         if (typeof idx !== 'undefined') {
           mesh.morphTargetInfluences[idx] = value;
@@ -26,13 +27,16 @@ export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme 
 
       // Apply viseme
       if (currentViseme) {
-        const visemeIdx = mesh.morphTargetDictionary[currentViseme];
-        if (typeof visemeIdx !== 'undefined') {
-          mesh.morphTargetInfluences[visemeIdx] = 1;
+        const visemeKey = VISEME_MAP[currentViseme];
+        if (visemeKey) {
+          const idx = mesh.morphTargetDictionary[visemeKey];
+          if (typeof idx !== 'undefined') {
+            mesh.morphTargetInfluences[idx] = 1;
+          }
         }
       }
     });
-  }, [nodes, currentExpression, currentViseme]);
+  }, [nodes, mappedMorphs, currentViseme]);
 
   if (!nodes || !materials) return null;
 

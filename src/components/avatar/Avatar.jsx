@@ -12,7 +12,7 @@ export function Avatar(props) {
   const { nodes, materials } = useGLTF(currentModel);
   const animations = useAvatarAnimations();
   const group = useRef();
-  const { actions } = useAnimations(animations, group);
+  const { actions } = useAnimations(animations || [], group);
   const { currentViseme } = useLipSync();
   const { 
     currentAnimation, 
@@ -25,7 +25,7 @@ export function Avatar(props) {
   useAvatarControls({
     nodes,
     onAnimationChange: (value) => {
-      if (value && actions[value]) {
+      if (value && actions?.[value]) {
         setCurrentAnimation(value);
       }
     },
@@ -34,10 +34,9 @@ export function Avatar(props) {
 
   // Handle animations
   useEffect(() => {
-    if (!actions || !currentAnimation) return;
+    if (!actions || !currentAnimation || !actions[currentAnimation]) return;
     
     const action = actions[currentAnimation];
-    if (!action) return;
 
     // Fade out other animations
     Object.values(actions).forEach(a => {
@@ -53,6 +52,10 @@ export function Avatar(props) {
       action.fadeOut(0.5);
     };
   }, [currentAnimation, actions]);
+
+  if (!nodes || !materials || !animations) {
+    return null;
+  }
 
   return (
     <group {...props} ref={group} dispose={null}>
