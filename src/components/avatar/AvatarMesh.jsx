@@ -1,31 +1,24 @@
 import React, { useRef, useEffect } from 'react';
-import { useMorphTargets } from '../../hooks/useMorphTargets';
+import { getExpressionMorphs, applyMorphTargets } from '../../utils/expressionUtils';
 import { VISEME_MAP } from '../../constants/visemes';
 
 export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme }) => {
   const meshRefs = useRef({});
-  const mappedMorphs = useMorphTargets(nodes, currentExpression);
 
   // Apply morph targets
   useEffect(() => {
     if (!nodes) return;
 
+    const morphTargets = getExpressionMorphs(nodes, currentExpression);
+
     ['Wolf3D_Head', 'Wolf3D_Teeth', 'EyeLeft', 'EyeRight'].forEach(meshName => {
       const mesh = meshRefs.current[meshName];
       if (!mesh?.morphTargetDictionary || !mesh?.morphTargetInfluences) return;
 
-      // Reset morphs
-      mesh.morphTargetInfluences.fill(0);
-
       // Apply expression
-      Object.entries(mappedMorphs).forEach(([key, value]) => {
-        const idx = mesh.morphTargetDictionary[key];
-        if (typeof idx !== 'undefined') {
-          mesh.morphTargetInfluences[idx] = value;
-        }
-      });
+      applyMorphTargets(mesh, morphTargets);
 
-      // Apply viseme
+      // Apply viseme if present
       if (currentViseme) {
         const visemeKey = VISEME_MAP[currentViseme];
         if (visemeKey) {
@@ -36,7 +29,7 @@ export const AvatarMesh = ({ nodes, materials, currentExpression, currentViseme 
         }
       }
     });
-  }, [nodes, mappedMorphs, currentViseme]);
+  }, [nodes, currentExpression, currentViseme]);
 
   if (!nodes || !materials) return null;
 

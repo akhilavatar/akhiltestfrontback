@@ -3,10 +3,10 @@ export const analyzeMorphTargets = (nodes) => {
   if (!nodes?.Wolf3D_Head?.morphTargetDictionary) return null;
   
   const morphDict = nodes.Wolf3D_Head.morphTargetDictionary;
-  console.log('Available morph targets:', Object.keys(morphDict));
+  const morphKeys = Object.keys(morphDict);
   
   return {
-    available: Object.keys(morphDict),
+    available: morphKeys,
     type: detectAvatarType(morphDict)
   };
 };
@@ -19,7 +19,8 @@ const detectAvatarType = (morphDict) => {
   if (morphKeys.includes('viseme_PP')) return 'rpm';
   
   // Ready Player Me avatar type detection
-  if (morphKeys.includes('mouthSmile')) return 'readyPlayerMe';
+  if (morphKeys.includes('mouthSmile') || morphKeys.includes('mouthSmileLeft')) return 'readyPlayerMe';
   
-  return 'unknown';
+  // If no specific type detected, use common mappings
+  return 'common';
 };

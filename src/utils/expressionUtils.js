@@ -1,9 +1,19 @@
-import { AVATAR_MORPH_MAPPINGS } from '../constants/avatarMorphTargets';
+import { BASE_EXPRESSIONS } from '../constants/expressionMappings';
+import { createMorphMapping } from './expressionMapping';
+import { logAvailableMorphTargets } from './debug/morphTargetLogger';
 
-export const getExpressionMorphs = (avatarType = 'default', expression = 'default') => {
-  // Get mappings for avatar type, fallback to default if not found
-  const mappings = AVATAR_MORPH_MAPPINGS[avatarType] || AVATAR_MORPH_MAPPINGS.default;
-  return mappings[expression] || {};
+export const getExpressionMorphs = (nodes, expression = 'default') => {
+  if (!nodes?.Wolf3D_Head?.morphTargetDictionary) return {};
+  
+  // Log available morphs in development
+  if (process.env.NODE_ENV === 'development') {
+    logAvailableMorphTargets(nodes);
+  }
+  
+  const morphDict = nodes.Wolf3D_Head.morphTargetDictionary;
+  const baseExpression = BASE_EXPRESSIONS[expression] || BASE_EXPRESSIONS.default;
+  
+  return createMorphMapping(morphDict, baseExpression);
 };
 
 export const applyMorphTargets = (mesh, morphTargets) => {
