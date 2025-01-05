@@ -1,18 +1,34 @@
 import { useAnimations, useGLTF } from "@react-three/drei";
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import { useLipSync } from "../../hooks/useLipSync";
 import { useAvatarModel } from "../../hooks/useAvatarModel";
 import { useAvatarState } from '../../hooks/useAvatarState';
 import { useAvatarControls } from '../../hooks/useAvatarControls';
-import { useAvatarAnimations } from '../../hooks/useAvatarAnimations';
+import { filterEndTracks } from '../../utils/animations';
+import { retargetAnimation } from '../../utils/animations/retargeting';
 import { AvatarMesh } from './AvatarMesh';
 
 export function Avatar(props) {
   const { currentModel } = useAvatarModel();
-  const { nodes, materials } = useGLTF(currentModel);
-  const animations = useAvatarAnimations();
+  const avatarData = useGLTF(currentModel);
+  const animationsData = useGLTF('/models/animations.glb');
   const group = useRef();
-  const { actions } = useAnimations(animations || [], group);
+
+  // Ensure we have all required data
+  const { nodes, materials, skeleton } = avatarData || {};
+  const originalAnimations = animationsData?.animations || [];
+  
+  // Process animations only when we have valid data
+  const animations = useMemo(() => {
+    if (!originalAnimations?.length || !skeleton) return [];
+    
+    const filteredAnimations = filterEndTracks(originalAnimations);
+    return filteredAnimations
+      .map(clip => retargetAnimation(clip, skeleton))
+      .filter(Boolean); // Remove any null results
+  }, [originalAnimations, skeleton]);
+
+  const { actions } = useAnimations(animations, group);
   const { currentViseme } = useLipSync();
   const { 
     currentAnimation, 
@@ -21,7 +37,7 @@ export function Avatar(props) {
     setCurrentExpression 
   } = useAvatarState();
 
-  // Setup Leva controls
+  // Only setup controls if we have valid nodes
   useAvatarControls({
     nodes,
     onAnimationChange: (value) => {
@@ -32,12 +48,12 @@ export function Avatar(props) {
     onExpressionChange: setCurrentExpression
   });
 
-  // Handle animations
+  // Handle animation changes
   useEffect(() => {
     if (!actions || !currentAnimation || !actions[currentAnimation]) return;
-    
-    const action = actions[currentAnimation];
 
+    const action = actions[currentAnimation];
+    
     // Fade out other animations
     Object.values(actions).forEach(a => {
       if (a !== action && a.isRunning()) {
@@ -46,14 +62,17 @@ export function Avatar(props) {
     });
 
     // Play new animation
-    action.reset().fadeIn(0.5).play();
+    action.reset()
+      .setEffectiveTimeScale(1)
+      .setEffectiveWeight(1)
+      .fadeIn(0.5)
+      .play();
 
-    return () => {
-      action.fadeOut(0.5);
-    };
+    return () => action.fadeOut(0.5);
   }, [currentAnimation, actions]);
 
-  if (!nodes || !materials || !animations) {
+  // Don't render until we have all required data
+  if (!nodes || !materials || !animations.length) {
     return null;
   }
 
@@ -68,3 +87,13 @@ export function Avatar(props) {
     </group>
   );
 }
+
+// Preload assets
+useGLTF.preload('/models/animations.glb');
+[
+  '/models/avatar1.glb',
+  '/models/avatar2.glb',
+  '/models/avatar3.glb',
+  '/models/avatar4.glb',
+  '/models/64f1a714fe61576b46f27ca2.glb'
+].forEach(path => useGLTF.preload(path));

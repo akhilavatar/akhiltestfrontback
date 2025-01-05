@@ -10,13 +10,20 @@ export const useAvatarState = () => {
   // Handle message-based animations
   useEffect(() => {
     if (!message) {
-      setCurrentAnimation(ANIMATIONS.IDLE);
+      // Only change to idle if we're currently in a talking animation
+      setCurrentAnimation(prev => {
+        const isTalking = ANIMATIONS.TALKING.includes(prev);
+        return isTalking ? ANIMATIONS.IDLE : prev;
+      });
       return;
     }
     
-    const talkingAnimation = message.animation || 
-      ANIMATIONS.TALKING[Math.floor(Math.random() * ANIMATIONS.TALKING.length)];
-    setCurrentAnimation(talkingAnimation);
+    if (message.animation) {
+      setCurrentAnimation(message.animation);
+    } else {
+      const randomTalkingAnimation = ANIMATIONS.TALKING[Math.floor(Math.random() * ANIMATIONS.TALKING.length)];
+      setCurrentAnimation(randomTalkingAnimation);
+    }
   }, [message]);
 
   return {
