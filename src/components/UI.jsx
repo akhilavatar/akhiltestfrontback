@@ -5,7 +5,6 @@ import { useKeyboardControls } from "../hooks/useKeyboardControls";
 import { Header } from "./Header";
 import { ChatInput } from "./ChatInput";
 import { ChatButton } from "./UI/ChatButton";
-import { AvatarSelector } from "./AvatarSelector";
 
 export const UI = ({ hidden }) => {
   const input = useRef();
@@ -27,18 +26,15 @@ export const UI = ({ hidden }) => {
   return (
     <div className="fixed inset-0 z-10 pointer-events-none">
       {showAvatar ? (
-        <>
-          <AvatarSelector />
-          <div className="w-[75%] h-[75%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-between">
-            <Header onClose={() => setShowAvatar(false)} />
-            <ChatInput 
-              inputRef={input}
-              onSend={sendMessage}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              disabled={loading || message}
-            />
-          </div>
-        </>
+        <div className="w-[75%] h-[75%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-between">
+          <Header onClose={() => setShowAvatar(false)} />
+          <ChatInput 
+            inputRef={input}
+            onSend={sendMessage}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            disabled={loading || message}
+          />
+        </div>
       ) : (
         <ChatButton onClick={() => setShowAvatar(true)} />
       )}

@@ -1,15 +1,3 @@
-// List of available expressions
-export const EXPRESSIONS = [
-  'default',
-  'smile',
-  'funnyFace',
-  'sad',
-  'surprised',
-  'angry',
-  'crazy'
-];
-
-// Expression morphs configuration
 export const facialExpressions = {
   default: {},
   smile: {
@@ -89,4 +77,16 @@ export const facialExpressions = {
     mouthSmileRight: 0.38473918302092225,
     tongueOut: 0.9618479575523053,
   },
+};
+
+export const visemeMap = {
+  A: "viseme_PP",
+  B: "viseme_kk",
+  C: "viseme_I",
+  D: "viseme_AA",
+  E: "viseme_O",
+  F: "viseme_U",
+  G: "viseme_FF",
+  H: "viseme_TH",
+  X: "viseme_PP",
 };

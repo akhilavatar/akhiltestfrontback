@@ -5,8 +5,7 @@ import {
 } from "@react-three/drei";
 import { Suspense, useEffect, useRef } from "react";
 import { useAvatar } from "../hooks/useAvatar";
-import { Avatar } from "./avatar/Avatar";
-import { AvatarModel } from "./avatar/AvatarModel";
+import { Avatar } from "./Avatar";
 import { Dots } from "./Dots";
 
 export const Experience = () => {
@@ -25,9 +24,7 @@ export const Experience = () => {
       <Environment preset="sunset" />
       {showAvatar && (
         <Suspense>
-          <AvatarModel>
-            <Avatar position={[0, 1, -0.5]} scale={0.5} />
-          </AvatarModel>
+          <Avatar position={[0, 1, -0.5]} scale={0.5} />
           <Dots position-y={1.0} position-x={-0.02} />
         </Suspense>
       )}
