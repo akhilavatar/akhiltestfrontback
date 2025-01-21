@@ -3,6 +3,7 @@ import { useChat } from "../hooks/useChat";
 import { useAvatar } from "../hooks/useAvatar";
 import { useKeyboardControls } from "../hooks/useKeyboardControls";
 import { Header } from "./Header";
+import { AvatarSelector } from "./UI/AvatarSelector";
 import { ChatInput } from "./ChatInput";
 import { ChatButton } from "./UI/ChatButton";
 
@@ -25,6 +26,9 @@ export const UI = ({ hidden }) => {
 
   return (
     <div className="fixed inset-0 z-10 pointer-events-none">
+      <div className="fixed top-4 right-4 pointer-events-auto">
+        <AvatarSelector />
+      </div>
       {showAvatar ? (
         <div className="w-[75%] h-[75%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-between">
           <Header onClose={() => setShowAvatar(false)} />
