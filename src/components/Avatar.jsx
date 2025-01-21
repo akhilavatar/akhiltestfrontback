@@ -8,11 +8,20 @@ import { useBlinking } from "../hooks/useBlinking";
 import { useLipSync } from "../hooks/useLipSync";
 import { filterEndTracks } from "../utils/animations";
 import { applyMorphTarget } from "../utils/morphTargets";
-import { SkinnedMeshes } from "./SkinnedMeshes";
-import { AVATAR_MODEL_PATH, ANIMATIONS_MODEL_PATH } from "../constants/models";
+import { AVATARS, ANIMATIONS_MODEL_PATH } from "../constants/models";
+import { SkinnedMeshes1 } from "./SkinnedMeshes1";
+import { SkinnedMeshes2 } from "./SkinnedMeshes2";
+import { useAvatar } from "../hooks/useAvatar";
+
+// Pre-load both models
+useGLTF.preload(AVATARS.AVATAR_1.path);
+useGLTF.preload(AVATARS.AVATAR_2.path);
 
 export function Avatar(props) {
-  const { nodes, materials, scene } = useGLTF(AVATAR_MODEL_PATH);
+  const { selectedAvatarId } = useAvatar();
+  const avatarPath = Object.values(AVATARS).find(avatar => avatar.id === selectedAvatarId)?.path;
+  
+  const { nodes, materials } = useGLTF(avatarPath);
   const { animations: originalAnimations } = useGLTF(ANIMATIONS_MODEL_PATH);
   const animations = filterEndTracks(originalAnimations);
   const group = useRef();
@@ -80,6 +89,8 @@ export function Avatar(props) {
       applyMorphTarget(nodes.Wolf3D_Head, currentViseme, 1);
     }
   });
+
+  const SkinnedMeshes = selectedAvatarId === AVATARS.AVATAR_1.id ? SkinnedMeshes1 : SkinnedMeshes2;
 
   return (
     <group {...props} ref={group} dispose={null}>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const SkinnedMeshes = ({ nodes, materials }) => {
+export const SkinnedMeshes1 = ({ nodes, materials }) => {
   return (
     <>
       <skinnedMesh
